@@ -222,9 +222,16 @@ func (bmi *BunModelInspector) Inspect(ctx context.Context) (Database, error) {
 			}
 
 			target := rel.JoinTable
+			// state.ForeignKeys[ForeignKey{
+			// 	From: NewColumnReference(t.Name, fromCols...),
+			// 	To:   NewColumnReference(target.Name, toCols...),
+			// }] = ""
+			fromTableName := strings.TrimPrefix(t.Name, t.Schema+".")
+			toTableName := strings.TrimPrefix(target.Name, target.Schema+".")
+
 			state.ForeignKeys[ForeignKey{
-				From: NewColumnReference(t.Name, fromCols...),
-				To:   NewColumnReference(target.Name, toCols...),
+				From: NewColumnReference(fromTableName, fromCols...),
+				To:   NewColumnReference(toTableName, toCols...),
 			}] = ""
 		}
 	}
