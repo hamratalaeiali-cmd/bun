@@ -221,18 +221,41 @@ func (bmi *BunModelInspector) Inspect(ctx context.Context) (Database, error) {
 				toCols = append(toCols, f.Name)
 			}
 
-			target := rel.JoinTable
-			// state.ForeignKeys[ForeignKey{
-			// 	From: NewColumnReference(t.Name, fromCols...),
-			// 	To:   NewColumnReference(target.Name, toCols...),
-			// }] = ""
-			fromTableName := strings.TrimPrefix(t.Name, t.Schema+".")
-			toTableName := strings.TrimPrefix(target.Name, target.Schema+".")
+			// target := rel.JoinTable
+			// // state.ForeignKeys[ForeignKey{
+			// // 	From: NewColumnReference(t.Name, fromCols...),
+			// // 	To:   NewColumnReference(target.Name, toCols...),
+			// // }] = ""
+			// fromTableName := strings.TrimPrefix(t.Name, t.Schema+".")
+			// toTableName := strings.TrimPrefix(target.Name, target.Schema+".")
 
+			// state.ForeignKeys[ForeignKey{
+			// 	From: NewColumnReference(fromTableName, fromCols...),
+			// 	To:   NewColumnReference(toTableName, toCols...),
+			// }] = ""
+			target := rel.JoinTable
+
+			fromTable := t.Name
+			toTable := target.Name
+			
+			fromSchema := t.Schema
+			toSchema := target.Schema
+			
+			if rel.Type == schema.HasOneRelation {
+			    // In a has-one relation, the foreign key belongs to the related table.
+			    fromTable, toTable = toTable, fromTable
+			    fromSchema, toSchema = toSchema, fromSchema
+			    fromCols, toCols = toCols, fromCols
+			}
+			
+			fromTableName := strings.TrimPrefix(fromTable, fromSchema+".")
+			toTableName := strings.TrimPrefix(toTable, toSchema+".")
+			
 			state.ForeignKeys[ForeignKey{
-				From: NewColumnReference(fromTableName, fromCols...),
-				To:   NewColumnReference(toTableName, toCols...),
+			    From: NewColumnReference(fromTableName, fromCols...),
+			    To:   NewColumnReference(toTableName, toCols...),
 			}] = ""
+			
 		}
 	}
 	return state, nil
